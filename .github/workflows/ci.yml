@@ -1,0 +1,86 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: tests/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd tests
+          npm ci
+
+      - name: Run tests with coverage
+        run: |
+          cd tests
+          npm run test:coverage
+
+      - name: Generate coverage badges
+        run: |
+          cd tests
+          npm run test:badges
+
+      - name: Commit coverage badges
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: 'tests/coverage/badges/*.svg'
+          message: 'docs: update coverage badges'
+          default_author: github_actions
+
+  release:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      packages: write
+    
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Create ZIP file
+        run: |
+          zip -r extension.zip extension/*
+
+      - name: Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd tests
+          npm ci
+          npm install -g semantic-release @semantic-release/github @semantic-release/changelog @semantic-release/git
+          semantic-release
+
+      - name: Upload & Publish Extension to Chrome Web Store
+        if: steps.semantic-release.outputs.new_release_published == 'true'
+        uses: mnao305/chrome-extension-upload@v4.0.1
+        with:
+          file-path: extension.zip
+          client-id: ${{ secrets.CLIENT_ID }}
+          client-secret: ${{ secrets.CLIENT_SECRET }}
+          refresh-token: ${{ secrets.REFRESH_TOKEN }} 
