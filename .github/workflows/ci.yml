@@ -19,27 +19,21 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: tests/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: |
-          cd tests
-          npm ci
+        run: npm ci
 
       - name: Run tests with coverage
-        run: |
-          cd tests
-          npm run test:coverage
+        run: npm run test:coverage
 
       - name: Generate coverage badges
-        run: |
-          cd tests
-          npm run test:badges
+        run: npm run test:badges
 
       - name: Commit coverage badges
         uses: EndBug/add-and-commit@v9
         with:
-          add: 'tests/coverage/badges/*.svg'
+          add: 'coverage/badges/*.svg'
           message: 'docs: update coverage badges'
           default_author: github_actions
 
@@ -63,18 +57,20 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Install dependencies
+        run: npm ci
+
       - name: Create ZIP file
         run: |
           zip -r extension.zip extension/*
 
+      - name: Install semantic-release
+        run: npm install -g semantic-release @semantic-release/github @semantic-release/changelog @semantic-release/git
+
       - name: Semantic Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cd tests
-          npm ci
-          npm install -g semantic-release @semantic-release/github @semantic-release/changelog @semantic-release/git
-          semantic-release
+        run: semantic-release
 
       - name: Upload & Publish Extension to Chrome Web Store
         if: steps.semantic-release.outputs.new_release_published == 'true'
