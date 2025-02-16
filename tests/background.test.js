@@ -1,6 +1,3 @@
-const fs = require("fs");
-const path = require("path");
-
 require("./mocks/chrome");
 
 const {
@@ -25,10 +22,12 @@ describe("State Management", () => {
   });
 
   test("updates storage with new state", async () => {
+    const data = { isEnabled: true };
     await updateStorage(true);
-    expect(chrome.storage.local.set).toHaveBeenCalledWith({
-      isEnabled: true,
-    });
+    expect(chrome.storage.local.set).toHaveBeenCalledWith(
+      data,
+      expect.any(Function)
+    );
   });
 
   test("gets storage state", async () => {
@@ -42,7 +41,7 @@ describe("State Management", () => {
       16: "icons/button/smartReader-16.png",
       32: "icons/button/smartReader-32.png",
       48: "icons/smartReader-48.png",
-      128: "icons/smartReader-128.png"
+      128: "icons/smartReader-128.png",
     });
   });
 
@@ -52,7 +51,7 @@ describe("State Management", () => {
       16: "icons/button/smartReader-disabled-16.png",
       32: "icons/button/smartReader-disabled-32.png",
       48: "icons/smartReader-48.png",
-      128: "icons/smartReader-128.png"
+      128: "icons/smartReader-128.png",
     });
   });
 
@@ -63,7 +62,7 @@ describe("State Management", () => {
         16: "icons/button/smartReader-16.png",
         32: "icons/button/smartReader-32.png",
         48: "icons/smartReader-48.png",
-        128: "icons/smartReader-128.png"
+        128: "icons/smartReader-128.png",
       },
     });
     expect(result).toBe(true);

@@ -36,9 +36,15 @@ const config = {
   ],
   storage: {
     keys: {
-      enabled: 'isEnabled'
+      enabled: 'isEnabled',
+      stats: 'processingStats'
     },
-    defaultState: false
+    defaultState: false,
+    defaultStats: {
+      totalProcessed: 0,
+      lastProcessingTime: 0,
+      averageProcessingTime: 0
+    }
   },
   dom: {
     boldTag: 'b',
@@ -78,7 +84,20 @@ const config = {
         128: 'icons/smartReader-128.png'
       }
     }
+  },
+  performance: {
+    debounceTime: 100,
+    processingTimeThreshold: 1000 // ms
   }
 };
 
-export default config;
+// Поддержка ES модулей
+if (typeof exports !== 'undefined') {
+  exports.default = config;
+  module.exports = config;
+}
+
+// Поддержка браузерного окружения
+if (typeof window !== 'undefined') {
+  window.config = config;
+}

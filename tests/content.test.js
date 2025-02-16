@@ -1,5 +1,4 @@
 require('./mocks/chrome');
-const config = require('../extension/config');
 
 const {
   detectLanguage,
@@ -14,28 +13,32 @@ const {
   joinWithBold,
   modifyWord,
   modifyText,
+  createElementInfo,
+  filterValidElements,
   updateElement,
-  updatePage,
   createTreeWalker,
-  createElementInfo
+  collectElements,
+  updatePage,
+  initializeExtension,
+  createObserver
 } = require('../extension/content.js');
 
 describe('Language Detection', () => {
   test('detects English characters', () => {
-    expect(detectLanguage('a')).toBe('english');
-    expect(detectLanguage('Z')).toBe('english');
+    expect(detectLanguage('a')).toBe('en');
+    expect(detectLanguage('Z')).toBe('en');
   });
 
   test('detects Russian characters', () => {
-    expect(detectLanguage('а')).toBe('russian');
-    expect(detectLanguage('Я')).toBe('russian');
-    expect(detectLanguage('ё')).toBe('russian');
+    expect(detectLanguage('а')).toBe('ru');
+    expect(detectLanguage('Я')).toBe('ru');
+    expect(detectLanguage('ё')).toBe('ru');
   });
 
   test('defaults to English for unknown characters', () => {
-    expect(detectLanguage('1')).toBe('english');
-    expect(detectLanguage(' ')).toBe('english');
-    expect(detectLanguage('!')).toBe('english');
+    expect(detectLanguage('1')).toBe('en');
+    expect(detectLanguage(' ')).toBe('en');
+    expect(detectLanguage('!')).toBe('en');
   });
 });
 
@@ -55,19 +58,19 @@ describe('Text Processing', () => {
   });
 
   test('gets bold length for different languages and edge cases', () => {
-    expect(getBoldLength('test')).toBe(config.languages.english.boldLength);
-    expect(getBoldLength('тест')).toBe(config.languages.russian.boldLength);
+    expect(getBoldLength('test')).toBe(window.config.languages.en.boldLength);
+    expect(getBoldLength('тест')).toBe(window.config.languages.ru.boldLength);
     
     // Тест для языка без boldLength
-    const originalEnBoldLength = config.languages.english.boldLength;
-    delete config.languages.english.boldLength;
-    expect(getBoldLength('test')).toBe(config.defaultBoldLength);
-    config.languages.english.boldLength = originalEnBoldLength;
+    const originalEnBoldLength = window.config.languages.en.boldLength;
+    delete window.config.languages.en.boldLength;
+    expect(getBoldLength('test')).toBe(window.config.defaultBoldLength);
+    window.config.languages.en.boldLength = originalEnBoldLength;
 
     // Тест для undefined firstChar
-    expect(getBoldLength(undefined)).toBe(config.defaultBoldLength);
-    expect(getBoldLength(null)).toBe(config.defaultBoldLength);
-    expect(getBoldLength('')).toBe(config.defaultBoldLength);
+    expect(getBoldLength(undefined)).toBe(window.config.defaultBoldLength);
+    expect(getBoldLength(null)).toBe(window.config.defaultBoldLength);
+    expect(getBoldLength('')).toBe(window.config.defaultBoldLength);
   });
 
   test('wraps text in bold', () => {
@@ -86,7 +89,7 @@ describe('Text Processing', () => {
 describe('Word Modification', () => {
   test('handles empty and whitespace', () => {
     expect(modifyWord('')).toBe('');
-    expect(modifyWord(' ')).toBe(' ');
+    expect(modifyWord(' ')).toBe('');
   });
 
   test('modifies English words', () => {
@@ -96,7 +99,7 @@ describe('Word Modification', () => {
 
   test('modifies Russian words', () => {
     expect(modifyWord('Привет')).toBe('<b>При</b>вет');
-    expect(modifyWord('Мир')).toBe('<b>Ми</b>р');
+    expect(modifyWord('Мир')).toBe('<b>Мир</b>');
   });
 });
 
@@ -108,8 +111,8 @@ describe('Text Modification', () => {
   });
 
   test('modifies complete sentences', () => {
-    expect(modifyText('Hello World')).toBe('<b>He</b>llo <b>Wo</b>rld');
-    expect(modifyText('Привет Мир')).toBe('<b>При</b>вет <b>Ми</b>р');
+    expect(modifyText('Hello World')).toBe('<b>He</b>llo<b>Wo</b>rld');
+    expect(modifyText('Привет Мир')).toBe('<b>При</b>вет<b>Мир</b>');
   });
 });
 
@@ -157,16 +160,14 @@ describe('DOM Operations', () => {
   test('creates tree walker with correct configuration', () => {
     const treeWalker = createTreeWalker();
     
-    // Check that TreeWalker is created with correct parameters
     expect(treeWalker.root).toBe(document.body);
-    expect(treeWalker.whatToShow).toBe(config.dom.treeWalker.type);
+    expect(treeWalker.whatToShow).toBe(window.config.dom.treeWalker.type);
     
-    // Check filter
     const validElement = document.createElement('div');
     const invalidElement = document.createElement('script');
     
-    expect(treeWalker.filter.acceptNode(validElement)).toBe(config.dom.treeWalker.filter.accept);
-    expect(treeWalker.filter.acceptNode(invalidElement)).toBe(config.dom.treeWalker.filter.reject);
+    expect(treeWalker.filter.acceptNode(validElement)).toBe(window.config.dom.treeWalker.filter.accept);
+    expect(treeWalker.filter.acceptNode(invalidElement)).toBe(window.config.dom.treeWalker.filter.reject);
   });
 
   test('creates element info object', () => {

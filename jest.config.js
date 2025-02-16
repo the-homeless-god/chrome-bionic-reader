@@ -15,7 +15,9 @@ module.exports = {
   moduleDirectories: ["node_modules"],
   setupFiles: ["<rootDir>/tests/mocks/chrome.js"],
   testPathIgnorePatterns: ["/node_modules/"],
-
+  testEnvironmentOptions: {
+    url: "http://localhost/"
+  },
   rootDir: __dirname,
   coverageThreshold: {
     global: {

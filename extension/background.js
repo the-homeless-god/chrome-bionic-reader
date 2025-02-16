@@ -1,5 +1,5 @@
-import config from './config.js';
-import { pipe } from './utils.js';
+import config from './background-config.js';
+import { pipe } from './background-utils.js';
 
 const toggleState = state => !state;
 
@@ -35,10 +35,7 @@ const getIconConfig = isEnabled => {
     ? config.icons.enabled 
     : config.icons.disabled;
 
-  return Object.entries(iconConfig.sizes).reduce((acc, [size, suffix]) => ({
-    ...acc,
-    [size]: `icons/${iconConfig.prefix}${suffix}`
-  }), {});
+  return iconConfig.paths;
 };
 
 const updateIcon = isEnabled => {
@@ -72,8 +69,10 @@ const initialize = () => {
   return true;
 };
 
+// Initialize service worker
 initialize();
 
+// Для тестов
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     toggleState,
