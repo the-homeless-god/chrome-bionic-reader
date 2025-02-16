@@ -1,5 +1,5 @@
-const config = require('./config');
-const { pipe } = require('./utils');
+import config from './config.js';
+import { pipe } from './utils.js';
 
 const toggleState = state => !state;
 
@@ -31,13 +31,13 @@ const getStorageState = () =>
   );
 
 const getIconConfig = isEnabled => {
-  const { prefix, sizes } = isEnabled 
+  const iconConfig = isEnabled 
     ? config.icons.enabled 
     : config.icons.disabled;
 
-  return Object.entries(sizes).reduce((acc, [size, suffix]) => ({
+  return Object.entries(iconConfig.sizes).reduce((acc, [size, suffix]) => ({
     ...acc,
-    [size]: `icons/${prefix}${suffix}`
+    [size]: `icons/${iconConfig.prefix}${suffix}`
   }), {});
 };
 

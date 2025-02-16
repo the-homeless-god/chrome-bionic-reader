@@ -63,21 +63,21 @@ const config = {
   },
   icons: {
     enabled: {
-      prefix: 'smartReader-',
+      prefix: 'button/smartReader-',
       sizes: {
         16: '16.png',
         32: '32.png',
-        48: '48.png',
-        128: '128.png'
+        48: '../smartReader-48.png',
+        128: '../smartReader-128.png'
       }
     },
     disabled: {
-      prefix: 'smartReader-disabled-',
+      prefix: 'button/smartReader-disabled-',
       sizes: {
         16: '16.png',
         32: '32.png',
-        48: '48.png',
-        128: '128.png'
+        48: '../smartReader-48.png',
+        128: '../smartReader-128.png'
       }
     }
   }
