@@ -17,6 +17,30 @@
 - Automatic publishing | Автоматическая публикация
 - Clean architecture | Чистая архитектура
 
+## Installation | Установка
+
+You can install the extension in two ways | Вы можете установить расширение двумя способами:
+
+### Chrome Web Store | Магазин Chrome
+
+Install directly from [Chrome Web Store](https://chromewebstore.google.com/detail/chrome-bionic-reader/bofckkbophijgakfoeihfmnjfphcabhi)
+
+Установите напрямую из [Chrome Web Store](https://chromewebstore.google.com/detail/chrome-bionic-reader/bofckkbophijgakfoeihfmnjfphcabhi)
+
+### Manual Installation | Ручная установка
+
+1. Download the latest release from [Releases page](https://github.com/the-homeless-god/chrome-bionic-reader/releases/latest)
+2. Unzip the downloaded file
+3. Open Chrome and go to `chrome://extensions/`
+4. Enable "Developer mode"
+5. Click "Load unpacked" and select the unzipped folder
+
+1. Скачайте последний релиз со [страницы релизов](https://github.com/the-homeless-god/chrome-bionic-reader/releases/latest)
+2. Распакуйте скачанный файл
+3. Откройте Chrome и перейдите на `chrome://extensions/`
+4. Включите "Режим разработчика"
+5. Нажмите "Загрузить распакованное" и выберите распакованную папку
+
 ## Architecture | Архитектура
 
 The extension follows functional programming principles:
