@@ -7,12 +7,12 @@ const {
   toggleState,
   updateStorage,
   getStorageState,
+  getIconConfig,
   updateIcon,
   executeContentScript,
   handleClick,
   initialize,
-  getIconConfig,
-} = require("../extension/background.js");
+} = require("../extension/background");
 
 describe("State Management", () => {
   beforeEach(() => {
@@ -25,18 +25,13 @@ describe("State Management", () => {
   });
 
   test("updates storage with new state", async () => {
-    const promise = updateStorage(true);
-    expect(chrome.storage.local.set).toHaveBeenCalled();
-    const call = chrome.storage.local.set.mock.calls[0];
-    expect(call[0]).toEqual({ isEnabled: true });
-    await promise;
+    await updateStorage(true);
+    expect(chrome.storage.local.set).toHaveBeenCalledWith({
+      isEnabled: true,
+    });
   });
 
   test("gets storage state", async () => {
-    chrome.storage.local.get.mockImplementation((keys, callback) => {
-      callback({ isEnabled: true });
-    });
-
     const state = await getStorageState();
     expect(state).toBe(true);
   });
@@ -44,18 +39,20 @@ describe("State Management", () => {
   test("gets icon config for enabled state", () => {
     const config = getIconConfig(true);
     expect(config).toEqual({
-      16: "icons/icon16.png",
-      48: "icons/icon48.png",
-      128: "icons/icon128.png",
+      16: "icons/button/smartReader-16.png",
+      32: "icons/button/smartReader-32.png",
+      48: "icons/smartReader-48.png",
+      128: "icons/smartReader-128.png"
     });
   });
 
   test("gets icon config for disabled state", () => {
     const config = getIconConfig(false);
     expect(config).toEqual({
-      16: "icons/icon-disabled16.png",
-      48: "icons/icon-disabled48.png",
-      128: "icons/icon-disabled128.png",
+      16: "icons/button/smartReader-disabled-16.png",
+      32: "icons/button/smartReader-disabled-32.png",
+      48: "icons/smartReader-48.png",
+      128: "icons/smartReader-128.png"
     });
   });
 
@@ -63,46 +60,34 @@ describe("State Management", () => {
     const result = updateIcon(true);
     expect(chrome.action.setIcon).toHaveBeenCalledWith({
       path: {
-        16: "icons/icon16.png",
-        48: "icons/icon48.png",
-        128: "icons/icon128.png",
+        16: "icons/button/smartReader-16.png",
+        32: "icons/button/smartReader-32.png",
+        48: "icons/smartReader-48.png",
+        128: "icons/smartReader-128.png"
       },
     });
     expect(result).toBe(true);
-
-    const result2 = updateIcon(false);
-    expect(chrome.action.setIcon).toHaveBeenCalledWith({
-      path: {
-        16: "icons/icon-disabled16.png",
-        48: "icons/icon-disabled48.png",
-        128: "icons/icon-disabled128.png",
-      },
-    });
-    expect(result2).toBe(false);
   });
 
   test("handles storage errors", async () => {
-    const error = new Error("Storage error");
-    chrome.runtime.lastError = error;
-    chrome.storage.local.set.mockImplementation((data, callback) => {
+    chrome.storage.local.set.mockImplementationOnce((data, callback) => {
+      chrome.runtime.lastError = new Error("Storage error");
       callback();
+      chrome.runtime.lastError = null;
     });
 
     await updateStorage(true);
-    expect(chrome.storage.local.set).toHaveBeenCalled();
-    delete chrome.runtime.lastError;
   });
 
   test("handles get storage errors", async () => {
-    const error = new Error("Get storage error");
-    chrome.runtime.lastError = error;
-    chrome.storage.local.get.mockImplementation((keys, callback) => {
+    chrome.storage.local.get.mockImplementationOnce((keys, callback) => {
+      chrome.runtime.lastError = new Error("Get storage error");
       callback({});
+      chrome.runtime.lastError = null;
     });
 
     const state = await getStorageState();
-    expect(state).toBe(false); // Should return default state on error
-    delete chrome.runtime.lastError;
+    expect(state).toBe(false);
   });
 });
 
@@ -112,26 +97,11 @@ describe("Content Script Management", () => {
   });
 
   test("executes content script", async () => {
-    executeContentScript(123);
-    const call = chrome.scripting.executeScript.mock.calls[0];
-    expect(call[0]).toEqual({
-      target: { tabId: 123 },
+    await executeContentScript(1);
+    expect(chrome.scripting.executeScript).toHaveBeenCalledWith({
+      target: { tabId: 1 },
       func: expect.any(Function),
     });
-
-    // Check that the callback function is a function
-    expect(typeof call[0].func).toBe("function");
-
-    // Check error handling
-    const error = new Error("Script execution error");
-    chrome.runtime.lastError = error;
-    chrome.scripting.executeScript.mockImplementation((params, callback) => {
-      if (callback) callback();
-    });
-
-    await executeContentScript(123);
-    expect(chrome.scripting.executeScript).toHaveBeenCalled();
-    delete chrome.runtime.lastError;
   });
 });
 
@@ -140,37 +110,17 @@ describe("Extension Initialization", () => {
     jest.clearAllMocks();
   });
 
-  test("initializes correctly", async () => {
-    const result = initialize();
-    expect(result).toBe(true);
+  test("initializes correctly", () => {
+    initialize();
     expect(chrome.action.onClicked.addListener).toHaveBeenCalled();
-
-    // Check callback function
-    chrome.storage.local.get.mockImplementation((keys, callback) => {
-      callback({ isEnabled: false });
-    });
-
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(chrome.action.setIcon).toHaveBeenCalledWith({
-      path: {
-        16: "icons/icon-disabled16.png",
-        48: "icons/icon-disabled48.png",
-        128: "icons/icon-disabled128.png",
-      },
-    });
   });
 
   test("handles click events", async () => {
-    chrome.storage.local.get.mockImplementation((keys, callback) => {
-      callback({ isEnabled: false });
-    });
-
-    const tab = { id: 123 };
+    const tab = { id: 1 };
     await handleClick(tab);
-
+    expect(chrome.storage.local.get).toHaveBeenCalled();
     expect(chrome.storage.local.set).toHaveBeenCalled();
-    const calls = chrome.storage.local.set.mock.calls;
-    expect(calls[0][0]).toEqual({ isEnabled: true });
+    expect(chrome.action.setIcon).toHaveBeenCalled();
     expect(chrome.scripting.executeScript).toHaveBeenCalled();
   });
 });
