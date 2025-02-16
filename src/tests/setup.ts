@@ -21,7 +21,9 @@ Object.defineProperty(global, 'pipe', {
 global.MutationObserver = class {
   observe() {}
   disconnect() {}
-  takeRecords() { return [] }
+  takeRecords() {
+    return [];
+  }
 };
 
 // Mock console methods
@@ -30,4 +32,4 @@ global.console = {
   error: jest.fn(),
   warn: jest.fn(),
   info: jest.fn(),
-}; 
+};

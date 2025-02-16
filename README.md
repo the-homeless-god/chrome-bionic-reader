@@ -16,22 +16,6 @@
 - Russian language support | Поддержка русского языка
 - Automatic publishing | Автоматическая публикация
 - Clean architecture | Чистая архитектура
-- Performance monitoring | Мониторинг производительности
-- User-friendly popup interface | Удобный popup-интерфейс
-
-## Performance | Производительность
-
-The extension includes performance monitoring features:
-- Processing time tracking
-- Word count statistics
-- Average processing time calculation
-- Performance thresholds to prevent slowdowns
-
-Расширение включает функции мониторинга производительности:
-- Отслеживание времени обработки
-- Статистика количества обработанных слов
-- Расчет среднего времени обработки
-- Пороговые значения производительности для предотвращения замедлений
 
 ## Installation | Установка
 
@@ -76,16 +60,14 @@ const detectLanguage = char =>
     .find(([_, { pattern }]) => pattern.test(char))
     ?.[0] || config.defaultLanguage;
 
-// Performance monitoring example
-const updatePage = () => {
-  const startTime = performance.now();
-  return pipe(
+// Declarative style example
+const updatePage = () =>
+  pipe(
     createTreeWalker,
     collectElements,
-    processElements,
-    trackPerformance(startTime)
+    filterValidElements,
+    elements => elements.map(updateElement)
   )();
-};
 ```
 
 ## Configuration | Конфигурация
@@ -95,20 +77,26 @@ All configuration is centralized in `extension/config.js`:
 ```javascript
 {
   languages: {
-    ru: {
+    russian: {
       pattern: /[а-яА-ЯёЁ]/,
       boldLength: 3
     },
-    en: {
+    english: {
       pattern: /[a-zA-Z]/,
       boldLength: 2
     }
   },
-  performance: {
-    debounceTime: 100,
-    processingTimeThreshold: 1000
-  }
   // ... other configuration
+}
+```
+
+To add a new language:
+
+1. Add language configuration to `config.js`:
+```javascript
+japanese: {
+  pattern: /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/,
+  boldLength: 1
 }
 ```
 
@@ -149,7 +137,6 @@ Required secrets:
 - Integration tests
 - DOM manipulation tests
 - Chrome API mocking
-- Performance monitoring tests
 
 ## Quick Links | Быстрые ссылки
 

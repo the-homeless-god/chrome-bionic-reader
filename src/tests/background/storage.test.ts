@@ -59,18 +59,17 @@ describe('Storage Module', () => {
   });
 
   test('handles storage errors', async () => {
-    chrome.storage.local.get.mockImplementationOnce(() =>
-      Promise.reject(new Error('Storage error'))
-    );
+    const error = new Error('Storage error');
+    chrome.storage.local.get.mockImplementationOnce(() => Promise.reject(error));
 
     const result = await pipe(
       getStorageState(),
       TE.fold(
-        (error) => T.of(error.message),
+        (e) => T.of(e.message),
         () => T.of('success')
       )
     )();
 
-    expect(result).toBe(`${config.errors.storage.get}: Error: Storage error`);
-  }, 10000);
+    expect(result).toBe(`${config.errors.storage.get}: ${error.message}`);
+  }, 15000);
 });

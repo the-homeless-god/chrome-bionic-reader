@@ -4,22 +4,26 @@ import { updateStats, handleMessage, initialize } from '@/popup';
 import { Stats } from '@/types';
 import * as TE from 'fp-ts/TaskEither';
 
-const mockStats: Stats = {
-  totalProcessed: 100,
-  lastProcessingTime: 50,
-  averageProcessingTime: 50,
-  sessionStartTime: Date.now(),
-};
+jest.mock('@/services/stats', () => {
+  const mockResetStats = jest.fn().mockReturnValue(TE.right(undefined));
+  const mockUpdateStats = jest.fn().mockReturnValue(TE.right(undefined));
+  const mockStats: Stats = {
+    totalProcessed: 100,
+    lastProcessingTime: 50,
+    averageProcessingTime: 50,
+    sessionStartTime: Date.now(),
+  };
 
-const mockResetStats = jest.fn().mockReturnValue(TE.right(undefined));
-const mockUpdateStats = jest.fn().mockReturnValue(TE.right(undefined));
+  return {
+    formatSessionTime: () => '1h 30m',
+    resetStats: mockResetStats,
+    updateStats: mockUpdateStats,
+    getStats: () => mockStats,
+  };
+});
 
-jest.mock('@/services/stats', () => ({
-  formatSessionTime: () => '1h 30m',
-  resetStats: mockResetStats,
-  updateStats: mockUpdateStats,
-  getStats: () => mockStats,
-}));
+const { resetStats: mockResetStats, updateStats: mockUpdateStats, getStats } = jest.requireMock('@/services/stats');
+const mockStats = getStats();
 
 describe('Popup', () => {
   beforeEach(() => {

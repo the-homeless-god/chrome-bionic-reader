@@ -32,9 +32,9 @@ describe('Extension E2E Tests', () => {
   beforeAll(async () => {
     const pathToExtension = path.join(process.cwd(), 'dist');
     testPagePath = path.join(process.cwd(), 'test-page.html');
-    
+
     fs.writeFileSync(testPagePath, TEST_HTML, 'utf-8');
-    
+
     browser = await puppeteer.launch({
       headless: false,
       args: [
@@ -47,7 +47,7 @@ describe('Extension E2E Tests', () => {
   beforeEach(async () => {
     page = await browser.newPage();
     await page.goto(`file://${testPagePath}`, { waitUntil: 'networkidle0' });
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for extension to initialize
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait for extension to initialize
   });
 
   afterEach(async () => {
@@ -70,10 +70,10 @@ describe('Extension E2E Tests', () => {
     // Verify specific text formatting
     const formattedText = await page.evaluate(() => {
       const paragraphs = Array.from(document.querySelectorAll('p, div, li'));
-      return paragraphs.map(p => p.innerHTML);
+      return paragraphs.map((p) => p.innerHTML);
     });
 
-    expect(formattedText.some(text => text.includes('<b>'))).toBe(true);
+    expect(formattedText.some((text) => text.includes('<b>'))).toBe(true);
   });
 
   test('updates statistics in popup', async () => {
@@ -127,10 +127,13 @@ describe('Extension E2E Tests', () => {
       chrome.runtime.sendMessage({ type: 'getState' });
     });
 
-    await page.waitForFunction(() => {
-      const content = document.querySelector('#content');
-      return !content?.innerHTML.includes('<b>');
-    }, { timeout: 5000 });
+    await page.waitForFunction(
+      () => {
+        const content = document.querySelector('#content');
+        return !content?.innerHTML.includes('<b>');
+      },
+      { timeout: 5000 }
+    );
 
     // Check that formatting is removed
     const hasFormattedText = await page.evaluate(() => {

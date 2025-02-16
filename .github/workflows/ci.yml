@@ -75,6 +75,7 @@ jobs:
         run: semantic-release
 
       - name: Upload & Publish Extension to Chrome Web Store
+        if: steps.semantic-release.outputs.new_release_published == 'true'
         uses: mnao305/chrome-extension-upload@v4.0.1
         with:
           file-path: extension.zip
