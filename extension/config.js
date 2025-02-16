@@ -44,15 +44,15 @@ const config = {
     boldTag: 'b',
     wordSeparator: /(\s+)/,
     nodeTypes: {
-      text: Node.TEXT_NODE,
-      element: Node.ELEMENT_NODE
+      text: 3,
+      element: 1
     },
     treeWalker: {
       filter: {
-        accept: NodeFilter.FILTER_ACCEPT,
-        reject: NodeFilter.FILTER_REJECT
+        accept: 1,
+        reject: 2
       },
-      type: NodeFilter.SHOW_ELEMENT
+      type: 1
     },
     observer: {
       config: {
@@ -63,17 +63,19 @@ const config = {
   },
   icons: {
     enabled: {
-      prefix: 'icon',
+      prefix: 'smartReader-',
       sizes: {
         16: '16.png',
+        32: '32.png',
         48: '48.png',
         128: '128.png'
       }
     },
     disabled: {
-      prefix: 'icon-disabled',
+      prefix: 'smartReader-disabled-',
       sizes: {
         16: '16.png',
+        32: '32.png',
         48: '48.png',
         128: '128.png'
       }
@@ -81,6 +83,4 @@ const config = {
   }
 };
 
-if (typeof module !== "undefined" && module.exports) {
-  module.exports = config;
-}
+export default config;
