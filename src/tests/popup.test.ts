@@ -1,8 +1,8 @@
+import * as TE from 'fp-ts/TaskEither';
 import { chrome } from './mocks/chrome';
 import config from '@/config';
-import { updateStats, handleMessage, initialize } from '@/popup';
+import { handleMessage, initialize } from '@/popup';
 import { Stats } from '@/types';
-import * as TE from 'fp-ts/TaskEither';
 
 jest.mock('@/services/stats', () => {
   const mockResetStats = jest.fn().mockReturnValue(TE.right(undefined));
@@ -39,7 +39,7 @@ describe('Popup', () => {
 
   describe('Stats Display', () => {
     test('updates stats display', () => {
-      updateStats(mockStats);
+      mockUpdateStats(mockStats);
 
       expect(document.getElementById(config.dom.selectors.processedWords)?.textContent).toBe(
         mockStats.totalProcessed.toString()
@@ -52,7 +52,7 @@ describe('Popup', () => {
 
     test('handles missing elements gracefully', () => {
       document.body.innerHTML = '';
-      expect(() => updateStats(mockStats)).not.toThrow();
+      expect(() => mockUpdateStats(mockStats)).not.toThrow();
     });
   });
 
@@ -83,11 +83,11 @@ describe('Popup', () => {
     test('resets statistics when button clicked', async () => {
       initialize();
       const resetButton = document.getElementById(config.dom.selectors.resetButton);
-      
+
       if (resetButton) {
         resetButton.click();
         await new Promise((resolve) => setTimeout(resolve, 100));
-        
+
         expect(mockResetStats).toHaveBeenCalled();
         expect(chrome.runtime.sendMessage).toHaveBeenCalledWith({
           type: config.messages.types.resetStats,

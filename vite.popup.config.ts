@@ -13,7 +13,7 @@ export default defineConfig({
     rollupOptions: {
       external: ['chrome'],
       output: {
-        entryFileNames: '[name].js',
+        entryFileNames: 'popup.js',
         globals: {
           chrome: 'chrome',
         },

@@ -17,6 +17,7 @@ export default defineConfig({
         globals: {
           chrome: 'chrome',
         },
+        entryFileNames: 'content.js',
       },
     },
   },

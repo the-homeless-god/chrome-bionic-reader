@@ -5,7 +5,7 @@ export const updateIcon = (enabled: boolean): TE.TaskEither<Error, void> =>
   TE.tryCatch(
     () =>
       chrome.action.setIcon({
-        path: enabled ? config.icons.enabled : config.icons.disabled,
+        path: enabled ? config.icons.enabled.paths : config.icons.disabled.paths,
       }),
     (error) => new Error(`${config.errors.icon.update}: ${error as string}`)
   );

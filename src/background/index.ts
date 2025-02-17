@@ -34,6 +34,4 @@ export const initialize = (): boolean => {
   return true;
 };
 
-if (!process.env.NODE_ENV?.includes('test')) {
-  initialize();
-}
+initialize();
