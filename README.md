@@ -1,6 +1,5 @@
 # Chrome Bionic Reader
 
-[![Coverage](./coverage/badges/coverage-jest%20coverage.svg)](./coverage/lcov-report/index.html)
 [![CI/CD](https://github.com/the-homeless-god/chrome-bionic-reader/actions/workflows/ci.yml/badge.svg)](https://github.com/the-homeless-god/chrome-bionic-reader/actions/workflows/ci.yml)
 [![Code Style](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://prettier.io/)
 
