@@ -1,13 +1,13 @@
 import { chrome, createMockStorageWithCallback } from '../mocks/chrome';
 import config from '@/config';
 import {
-  updateStats,
   processElement,
   processNode,
   updatePage,
   createObserver,
   initializeExtension,
 } from '@/content';
+import { updateStats } from '@/content/stats';
 
 const mockProcessText = jest.fn((text: string) => {
   const words = text.split(' ');

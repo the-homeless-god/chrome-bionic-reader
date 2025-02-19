@@ -1,69 +1,98 @@
-import config from '@/config';
 import { pipe } from 'fp-ts/function';
-import { removeFormattingFromElements } from './dom';
-import { processNode } from './processor';
-import { updateStats } from './stats';
-import { createObserver, cleanupObserver } from './observer';
+import * as TE from 'fp-ts/TaskEither';
+import * as T from 'fp-ts/Task';
+import config from '@/config';
 import { getStorageState } from '@/background/storage';
+import { processElement } from './processor';
+import { createObserver, cleanupObserver } from './observer';
+import { log } from '@/services/logger';
 
 export * from './processor';
-export * from './stats';
 export * from './observer';
 
-export const updatePage = async (): Promise<void> => {
-  const isEnabled = await getStorageState();
-
-  if (!isEnabled) {
-    pipe(
-      document.querySelectorAll(config.dom.selectors.boldElements),
-      removeFormattingFromElements
-    );
-    return;
-  }
-
-  const startTime = performance.now();
-  let processedCount = 0;
-
-  const processNodes = (walker: TreeWalker): void => {
-    pipe(
-      Array.from({ length: config.processing.batchSize }, () => walker.nextNode()),
-      (nodes) => nodes.filter((node): node is Node => node !== null),
-      (nodes) => {
-        nodes.forEach((node) => {
-          processNode(node);
-          processedCount++;
-        });
-      }
-    );
-  };
-
-  const walker = document.createTreeWalker(document.body, config.dom.treeWalker.type, {
-    acceptNode: (node: Node) => {
-      if (node.nodeType === config.dom.nodeTypes.text) {
-        return config.dom.treeWalker.filter.accept;
-      }
-      return config.dom.treeWalker.filter.skip;
+const sendStatsUpdate = (totalProcessed: number, processingTime: number): void => {
+  log.info('Updating stats', { totalProcessed, processingTime });
+  chrome.runtime.sendMessage({
+    type: config.messages.types.updateStats,
+    data: {
+      totalProcessed,
+      lastProcessingTime: processingTime,
+      averageProcessingTime: processingTime,
+      sessionStartTime: Date.now(),
     },
   });
+};
 
-  while (walker.nextNode()) {
-    processNodes(walker);
+export const updatePage = async (): Promise<void> => {
+  log.info('Starting page update');
+  const startTime = performance.now();
+  let processedWords = 0;
+
+  const elements = document.querySelectorAll(config.dom.selectors.textElements);
+  log.debug('Found text elements', { count: elements.length });
+
+  for (const element of elements) {
+    if (!config.state.processedElements.has(element)) {
+      processElement(element);
+      processedWords += element.textContent?.split(config.dom.wordSeparator).length || 0;
+    }
   }
 
-  const processingTime = performance.now() - startTime;
-  updateStats(processedCount, processingTime);
+  const processingTime = Math.round(performance.now() - startTime);
+  log.debug('Page update completed', { processedWords, processingTime });
+  sendStatsUpdate(processedWords, processingTime);
 };
 
 export const initializeExtension = (): void => {
-  const observer = createObserver();
-  observer.observe(document.body, config.dom.observer.config);
+  log.info('Initializing content script');
+  
+  const handleDOMContentLoaded = async (): Promise<void> => {
+    log.debug('DOM content loaded');
+    
+    const state = await pipe(
+      getStorageState(),
+      TE.fold(
+        (error) => {
+          log.error('Failed to get storage state', error);
+          return T.of(false);
+        },
+        (state) => {
+          log.debug('Got storage state', { state });
+          return T.of(state);
+        }
+      )
+    )();
 
-  document.addEventListener('DOMContentLoaded', async () => {
-    const result = await chrome.storage.local.get([config.storage.keys.enabled]);
-    if (result[config.storage.keys.enabled]) {
-      await updatePage();
+    if (state) {
+      log.debug('Extension enabled, updating page');
+      await pipe(
+        TE.tryCatch(
+          () => updatePage(),
+          (error) => {
+            log.error('Failed to update page', error);
+            return new Error(`${config.errors.tabs.execute}: ${error}`);
+          }
+        ),
+        TE.fold(
+          () => T.of(undefined),
+          () => T.of(undefined)
+        )
+      )();
+
+      const observer = createObserver();
+      log.debug('Created observer');
+      observer.observe(document.body, config.dom.observer.config);
+      config.state.observer = observer;
+    } else {
+      log.debug('Extension disabled, skipping page update');
     }
-  });
+  };
 
-  window.addEventListener('unload', cleanupObserver);
+  const handleUnload = (): void => {
+    log.debug('Page unloading, cleaning up');
+    cleanupObserver();
+  };
+
+  document.addEventListener('DOMContentLoaded', () => void handleDOMContentLoaded());
+  window.addEventListener('unload', handleUnload);
 };

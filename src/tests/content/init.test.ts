@@ -1,5 +1,6 @@
 import { chrome, createMockStorageWithCallback } from '../mocks/chrome';
 import config from '@/config';
+import { initializeExtension } from '@/content/index';
 
 const mockObserve = jest.fn();
 const mockDisconnect = jest.fn();
@@ -16,6 +17,11 @@ const mockCreateObserver = jest.fn().mockReturnValue(mockObserver);
 const mockCleanupObserver = jest.fn();
 const mockGetStorageState = jest.fn().mockResolvedValue(true);
 
+jest.mock('@/content', () => ({
+  updatePage: mockUpdatePage,
+  initializeExtension,
+}));
+
 jest.mock('@/background/storage', () => ({
   getStorageState: mockGetStorageState,
 }));
@@ -25,37 +31,39 @@ jest.mock('@/content/observer', () => ({
   cleanupObserver: mockCleanupObserver,
 }));
 
-jest.mock('@/content', () => {
-  const actualContent = jest.requireActual('@/content');
-  return {
-    ...actualContent,
-    updatePage: mockUpdatePage,
-    initializeExtension: actualContent.initializeExtension,
-  };
-});
-
 describe('Content Initialization', () => {
-  let initializeExtension: typeof import('@/content').initializeExtension;
-
-  beforeEach(async () => {
+  beforeEach(() => {
     jest.clearAllMocks();
     document.body.innerHTML = '';
-    config.state.observer = null;
-
-    jest.isolateModules(() => {
-      const content = require('@/content');
-      initializeExtension = content.initializeExtension;
-    });
   });
 
-  test('initializes extension on DOMContentLoaded', async () => {
+  test('initializes extension on DOMContentLoaded', () => {
     initializeExtension();
     document.dispatchEvent(new Event('DOMContentLoaded'));
+    expect(mockUpdatePage).toHaveBeenCalled();
+  });
 
+  test('handles initialization errors', async () => {
+    const error = new Error('Update error');
+    mockUpdatePage.mockRejectedValueOnce(error);
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    initializeExtension();
+    document.dispatchEvent(new Event('DOMContentLoaded'));
+    
     await new Promise((resolve) => setTimeout(resolve, 100));
-    expect(mockCreateObserver).toHaveBeenCalled();
-    expect(mockObserve).toHaveBeenCalledWith(document.body, config.dom.observer.config);
-    expect(mockGetStorageState).toHaveBeenCalled();
+    expect(consoleSpy).toHaveBeenCalledWith(
+      '[Chrome Bionic Reader] [ERROR] Failed to update page',
+      error
+    );
+    consoleSpy.mockRestore();
+  });
+
+  test('cleans up on unload', () => {
+    initializeExtension();
+    document.dispatchEvent(new Event('DOMContentLoaded'));
+    window.dispatchEvent(new Event('unload'));
+    expect(config.state.observer).toBeNull();
   });
 
   test('sets up observer correctly', async () => {

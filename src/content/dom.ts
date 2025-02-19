@@ -7,7 +7,22 @@ export const markAsProcessed = (element: Element): Element => {
   return element;
 };
 
-export const isTextNode = (node: Node): boolean => node.nodeType === config.dom.nodeTypes.text;
+export const isTextNode = (node: Node): boolean =>
+  node.nodeType === config.dom.nodeTypes.text;
+
+export const isValidNode = (node: Node): boolean =>
+  isTextNode(node) && Boolean(node.textContent?.trim().length);
+
+export const isValidParent = (node: Node | null): boolean => {
+  if (!node || node.nodeType !== config.dom.nodeTypes.element || !(node instanceof Element)) {
+    return false;
+  }
+
+  return (
+    !config.dom.excludedTags.includes(node.tagName.toLowerCase()) &&
+    !config.state.processedElements.has(node)
+  );
+};
 
 export const hasParentWithTag = (element: Element, tags: string[]): boolean =>
   pipe(

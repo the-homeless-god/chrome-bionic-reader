@@ -192,5 +192,44 @@ describe('Background Script', () => {
 
       consoleSpy.mockRestore();
     });
+
+    test('handles browser action click', async () => {
+      initialize();
+      const tab = { id: 1 } as chrome.tabs.Tab;
+      const clickHandler = chrome.action.onClicked.addListener.mock.calls[0][0] as (tab: chrome.tabs.Tab) => void;
+      
+      await clickHandler(tab);
+      expect(chrome.action.setIcon).toHaveBeenCalledWith({
+        path: config.icons.enabled.paths,
+      });
+    });
+
+    test('handles browser action click error', async () => {
+      const error = new Error('Icon error');
+      // @ts-ignore Because of the mock
+      chrome.action.setIcon.mockRejectedValueOnce(error);
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      initialize();
+      const tab = { id: 1 } as chrome.tabs.Tab;
+      const clickHandler = chrome.action.onClicked.addListener.mock.calls[0][0] as (tab: chrome.tabs.Tab) => void;
+      
+      await clickHandler(tab);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[Chrome Bionic Reader] [ERROR] Failed to update icon',
+        error
+      );
+
+      consoleSpy.mockRestore();
+    });
+
+    test('skips icon update for invalid tab', async () => {
+      initialize();
+      const tab = { id: undefined } as chrome.tabs.Tab;
+      const clickHandler = chrome.action.onClicked.addListener.mock.calls[0][0] as (tab: chrome.tabs.Tab) => void;
+      
+      await clickHandler(tab);
+      expect(chrome.action.setIcon).not.toHaveBeenCalled();
+    });
   });
 });

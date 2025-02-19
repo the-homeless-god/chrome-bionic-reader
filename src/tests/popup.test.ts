@@ -104,15 +104,18 @@ describe('Popup', () => {
     });
 
     test('handles initialization errors gracefully', async () => {
+      const error = new Error('Initialization error');
+      // @ts-expect-error Because of the mock
+      chrome.runtime.sendMessage.mockRejectedValueOnce(error);
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      chrome.runtime.sendMessage.mockImplementationOnce(() =>
-        Promise.reject(new Error('Initialization error'))
-      );
 
       initialize();
       await new Promise((resolve) => setTimeout(resolve, 100));
 
-      expect(consoleSpy).not.toHaveBeenCalled();
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[Chrome Bionic Reader] [ERROR] Failed to request initial stats',
+        error
+      );
       consoleSpy.mockRestore();
     });
   });

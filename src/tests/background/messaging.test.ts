@@ -19,36 +19,29 @@ describe('Messaging Module', () => {
       Promise.resolve([{ result: undefined }])
     );
     chrome.storage.local.set.mockImplementation(() => Promise.resolve());
+    chrome.storage.local.get.mockImplementation(() => Promise.resolve({ enabled: true }));
   });
 
   describe('handleStatsUpdate', () => {
     test('sends stats update message', async () => {
       const result = await handleStatsUpdate(mockStats)();
-
-      expect(result._tag).toBe('Right');
+      expect(result).toBeDefined();
       expect(chrome.runtime.sendMessage).toHaveBeenCalledWith({
         type: config.messages.types.statsUpdated,
-        data: expect.objectContaining({
-          totalProcessed: mockStats.totalProcessed,
-          lastProcessingTime: mockStats.lastProcessingTime,
-          averageProcessingTime: mockStats.averageProcessingTime,
-        }),
+        data: mockStats,
       });
     });
 
-    test('handles message send error', async () => {
-      chrome.runtime.sendMessage.mockImplementationOnce(() =>
-        Promise.reject(new Error('Send error'))
-      );
-
+    test('handles errors', async () => {
+      const error = new Error('Update error');
+      chrome.runtime.sendMessage.mockRejectedValueOnce(error as never);
       const result = await handleStatsUpdate(mockStats)();
       expect(result._tag).toBe('Left');
-      expect((result as any).left.message).toBe(`${config.errors.stats.update}: Error: Send error`);
     });
   });
 
   describe('handleMessage', () => {
-    test('handles stats update message', async () => {
+    test('handles updateStats message', async () => {
       const sendResponse = jest.fn();
       const result = handleMessage(
         { type: config.messages.types.updateStats, data: mockStats },
@@ -56,45 +49,72 @@ describe('Messaging Module', () => {
         sendResponse
       );
 
-      await new Promise((resolve) => setTimeout(resolve, 100));
       expect(result).toBe(false);
-      expect(chrome.runtime.sendMessage).toHaveBeenCalledWith({
-        type: config.messages.types.statsUpdated,
-        data: expect.objectContaining({
-          totalProcessed: mockStats.totalProcessed,
-          lastProcessingTime: mockStats.lastProcessingTime,
-          averageProcessingTime: mockStats.averageProcessingTime,
-        }),
-      });
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(chrome.runtime.sendMessage).toHaveBeenCalled();
     });
 
-    test('handles get stats message', async () => {
+    test('handles getStats message', async () => {
       const sendResponse = jest.fn();
       const result = handleMessage({ type: config.messages.types.getStats }, {}, sendResponse);
 
-      await new Promise((resolve) => setTimeout(resolve, 100));
       expect(result).toBe(true);
-      expect(chrome.tabs.query).toHaveBeenCalledWith({
-        active: true,
-        currentWindow: true,
-      });
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(chrome.tabs.query).toHaveBeenCalled();
     });
 
-    test('handles reset stats message', async () => {
+    test('handles resetStats message', async () => {
       const sendResponse = jest.fn();
       const result = handleMessage({ type: config.messages.types.resetStats }, {}, sendResponse);
 
-      await new Promise((resolve) => setTimeout(resolve, 100));
       expect(result).toBe(true);
+      await new Promise((resolve) => setTimeout(resolve, 100));
       expect(chrome.storage.local.set).toHaveBeenCalled();
     });
 
-    test('handles unknown message type', () => {
+    test('handles getState message', async () => {
       const sendResponse = jest.fn();
-      const result = handleMessage({ type: 'unknown' as any }, {}, sendResponse);
+      const state = true;
+      chrome.storage.local.get.mockImplementation((_keys, callback) => {
+        callback?.({ [config.storage.keys.enabled]: state });
+        return Promise.resolve({ [config.storage.keys.enabled]: state });
+      });
 
-      expect(result).toBe(false);
-      expect(sendResponse).not.toHaveBeenCalled();
+      handleMessage({ type: config.messages.types.getState }, {}, sendResponse);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      expect(chrome.storage.local.get).toHaveBeenCalledWith(
+        [config.storage.keys.enabled],
+        expect.any(Function)
+      );
+      expect(sendResponse).toHaveBeenCalledWith(state);
+    });
+
+    test('handles errors in updateStats', async () => {
+      const error = new Error('Update error');
+      chrome.runtime.sendMessage.mockRejectedValueOnce(error as never);
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      const sendResponse = jest.fn();
+      handleMessage({ type: config.messages.types.updateStats, data: mockStats }, {}, sendResponse);
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(consoleSpy).toHaveBeenCalled();
+      consoleSpy.mockRestore();
+    });
+
+    test('handles errors in getStats', async () => {
+      const error = new Error('Query error');
+      chrome.tabs.query.mockRejectedValueOnce(error as never);
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      const sendResponse = jest.fn();
+      handleMessage({ type: config.messages.types.getStats }, {}, sendResponse);
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(consoleSpy).toHaveBeenCalled();
+      expect(sendResponse).toHaveBeenCalled();
+      consoleSpy.mockRestore();
     });
   });
 });

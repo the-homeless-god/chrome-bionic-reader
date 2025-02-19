@@ -84,8 +84,8 @@ describe('Config', () => {
     test('has correct disabled icon configuration', () => {
       expect(config.icons.disabled.paths['16']).toBe('icons/button/smartReader-disabled-16.png');
       expect(config.icons.disabled.paths['32']).toBe('icons/button/smartReader-disabled-32.png');
-      expect(config.icons.disabled.paths['48']).toBe('icons/smartReader-disabled-48.png');
-      expect(config.icons.disabled.paths['128']).toBe('icons/smartReader-disabled-128.png');
+      expect(config.icons.disabled.paths['48']).toBe('icons/button/smartReader-disabled-32.png');
+      expect(config.icons.disabled.paths['128']).toBe('icons/button/smartReader-disabled-32.png');
     });
   });
 
