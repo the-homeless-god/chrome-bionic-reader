@@ -21,15 +21,20 @@
 - Real-time statistics | Статистика в реальном времени
 
 ## Examples | Примеры
-
 ### English Text | Английский текст
-![English Text Example](docs/examples/processed_compressed/en-bold_compressed.jpg)
+
+| Normal | Bionic |
+|--------|---------|
+| ![English Text Example](docs/examples/en-unbold.png) | ![English Text Example](docs/examples/en-bold.png) |
 
 ### Russian Text | Русский текст
-![Russian Text Example](docs/examples/processed_compressed/ru-bold_compressed.jpg)
+
+| Normal | Bionic |
+|--------|---------|
+| ![Russian Text Example](docs/examples/ru-unbold.png) | ![Russian Text Example](docs/examples/ru-bold.png) |
 
 ### Settings | Настройки
-![Extension Settings](docs/examples/processed_compressed/extension-settings_compressed.jpg)
+![Extension Settings](docs/examples/extension-settings.png)
 
 ## Installation | Установка
 
