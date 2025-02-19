@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/the-homeless-god/chrome-bionic-reader/compare/v1.1.0...v1.2.0) (2025-02-19)
+
+
+### Features
+
+* **docs:** add screenshots into readme ([0fda657](https://github.com/the-homeless-god/chrome-bionic-reader/commit/0fda657d1692cc82146ae2ed0db3d440ed2b65da))
+
 # [1.1.0](https://github.com/the-homeless-god/chrome-bionic-reader/compare/v1.0.0...v1.1.0) (2025-02-19)
 
 
