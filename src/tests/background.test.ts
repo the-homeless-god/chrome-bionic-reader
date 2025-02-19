@@ -177,16 +177,18 @@ describe('Background Script', () => {
     });
 
     test('handles initialization errors', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-      chrome.storage.local.set.mockImplementationOnce(() =>
-        Promise.reject(new Error('Init error'))
-      );
+      const error = new Error('Init error');
+      chrome.storage.local.set.mockRejectedValueOnce(error);
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
       const result = initialize();
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       expect(result).toBe(true);
-      expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[Chrome Bionic Reader] [ERROR] Failed to initialize storage',
+        expect.any(Error)
+      );
 
       consoleSpy.mockRestore();
     });

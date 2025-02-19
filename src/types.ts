@@ -25,7 +25,7 @@ export type Stats = {
   sessionStartTime: number;
 };
 
-export type Config = {
+export interface Config {
   languages: Languages;
   defaultLanguage: string;
   defaultBoldLength: number;
@@ -130,7 +130,11 @@ export type Config = {
       update: string;
     };
   };
-};
+  debug: {
+    enabled: boolean;
+    prefix: string;
+  };
+}
 
 export type MessageType = 'updateStats' | 'resetStats' | 'getStats' | 'statsUpdated' | 'getState';
 

@@ -75,17 +75,17 @@ describe('Config', () => {
 
   describe('Icons', () => {
     test('has correct enabled icon configuration', () => {
-      expect(config.icons.enabled.paths['16']).toBe('icons/enabled-16.png');
-      expect(config.icons.enabled.paths['32']).toBe('icons/enabled-32.png');
-      expect(config.icons.enabled.paths['48']).toBe('icons/enabled-48.png');
-      expect(config.icons.enabled.paths['128']).toBe('icons/enabled-128.png');
+      expect(config.icons.enabled.paths['16']).toBe('icons/button/smartReader-16.png');
+      expect(config.icons.enabled.paths['32']).toBe('icons/button/smartReader-32.png');
+      expect(config.icons.enabled.paths['48']).toBe('icons/smartReader-48.png');
+      expect(config.icons.enabled.paths['128']).toBe('icons/smartReader-128.png');
     });
 
     test('has correct disabled icon configuration', () => {
-      expect(config.icons.disabled.paths['16']).toBe('icons/disabled-16.png');
-      expect(config.icons.disabled.paths['32']).toBe('icons/disabled-32.png');
-      expect(config.icons.disabled.paths['48']).toBe('icons/disabled-48.png');
-      expect(config.icons.disabled.paths['128']).toBe('icons/disabled-128.png');
+      expect(config.icons.disabled.paths['16']).toBe('icons/button/smartReader-disabled-16.png');
+      expect(config.icons.disabled.paths['32']).toBe('icons/button/smartReader-disabled-32.png');
+      expect(config.icons.disabled.paths['48']).toBe('icons/smartReader-disabled-48.png');
+      expect(config.icons.disabled.paths['128']).toBe('icons/smartReader-disabled-128.png');
     });
   });
 

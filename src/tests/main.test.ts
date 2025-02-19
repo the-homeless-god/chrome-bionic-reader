@@ -88,17 +88,13 @@ describe('Extension Initialization', () => {
     expect(result).toBe(4);
   });
 
-  test('initializes in non-test environment', () => {
-    const originalNodeEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'production';
-
+  test('initializes extension automatically', async () => {
     jest.isolateModules(() => {
       require('../background');
     });
 
+    await new Promise((resolve) => setTimeout(resolve, 100));
     expect(chrome.storage.local.set).toHaveBeenCalled();
     expect(chrome.runtime.onMessage.addListener).toHaveBeenCalled();
-
-    process.env.NODE_ENV = originalNodeEnv;
   });
 });

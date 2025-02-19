@@ -138,6 +138,10 @@ const config: Config = {
       update: 'Failed to update icon',
     },
   },
+  debug: {
+    enabled: true,
+    prefix: '[Chrome Bionic Reader]',
+  },
 } as const;
 
 export default config;

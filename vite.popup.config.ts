@@ -7,7 +7,8 @@ export default defineConfig({
     emptyOutDir: false,
     lib: {
       entry: resolve(__dirname, 'src/popup/index.ts'),
-      formats: ['es'],
+      formats: ['iife'],
+      name: 'popup',
       fileName: 'popup',
     },
     rollupOptions: {

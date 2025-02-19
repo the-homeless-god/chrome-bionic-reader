@@ -1,68 +1,74 @@
 import { Message, Stats } from '@/types';
 import config from '@/config';
+import { log } from '@/services/logger';
 import { pipe } from 'fp-ts/function';
-import * as O from 'fp-ts/Option';
-import * as A from 'fp-ts/Array';
 import * as TE from 'fp-ts/TaskEither';
-import { formatSessionTime, resetStats as resetStatsService } from '@/services/stats';
+import { resetStats as resetStatsService } from '@/services/stats';
 import * as T from 'fp-ts/Task';
 
-type ElementUpdate = readonly [string, string];
+const updateStats = (stats: Stats): void => {
+  log.debug('Updating stats in popup', stats);
+  const processedWords = document.getElementById(config.dom.selectors.processedWords);
+  const averageTime = document.getElementById(config.dom.selectors.averageTime);
+  const sessionInfo = document.getElementById(config.dom.selectors.sessionInfo);
 
-const updateElement = (id: string, value: string): O.Option<Element> =>
-  pipe(
-    O.fromNullable(document.getElementById(id)),
-    O.map((element) => {
-      element.textContent = value;
-      return element;
-    })
-  );
-
-export const updateStats = (stats: Stats): void => {
-  const updates: ElementUpdate[] = [
-    [config.dom.selectors.processedWords, stats.totalProcessed.toString()],
-    [config.dom.selectors.averageTime, stats.averageProcessingTime.toString()],
-    [config.dom.selectors.sessionInfo, formatSessionTime(stats.sessionStartTime)],
-  ];
-
-  pipe(
-    updates,
-    A.map(([id, value]) => updateElement(id, value))
-  );
+  if (processedWords) {
+    processedWords.textContent = stats.totalProcessed.toString();
+  }
+  if (averageTime) {
+    averageTime.textContent = stats.averageProcessingTime.toString();
+  }
+  if (sessionInfo) {
+    const duration = Date.now() - stats.sessionStartTime;
+    const hours = Math.floor(duration / config.time.hour);
+    const minutes = Math.floor((duration % config.time.hour) / config.time.minute);
+    sessionInfo.textContent = config.time.formats.hourMinute
+      .replace('%h', hours.toString())
+      .replace('%m', minutes.toString());
+  }
 };
 
-export const resetStats = (): void => {
-  void pipe(
+const handleResetStats = async (): Promise<void> => {
+  log.debug('Reset button clicked');
+  await pipe(
     resetStatsService(),
     TE.fold(
-      (error) => T.of(console.error(error)),
-      () => T.of(undefined)
+      (error) => {
+        log.error('Failed to reset stats', error);
+        return T.of(undefined);
+      },
+      () => {
+        log.debug('Stats reset successfully');
+        chrome.runtime.sendMessage({ type: config.messages.types.resetStats });
+        return T.of(undefined);
+      }
     )
   )();
 };
 
 export const handleMessage = (message: Message): void => {
-  pipe(
-    message,
-    O.fromPredicate(
-      (msg): msg is Message & { data: Stats } =>
-        msg.type === config.messages.types.updateStats && !!msg.data
-    ),
-    O.map((msg) => updateStats(msg.data))
-  );
-};
-
-const setupEventListeners = (): void => {
-  pipe(
-    O.fromNullable(document.getElementById(config.dom.selectors.resetButton)),
-    O.map((button) => button.addEventListener('click', resetStats))
-  );
+  log.debug('Handling message in popup', message);
+  switch (message.type) {
+    case config.messages.types.updateStats:
+      if ('data' in message) {
+        updateStats(message.data as Stats);
+      }
+      break;
+  }
 };
 
 export const initialize = (): void => {
+  log.info('Initializing popup');
   chrome.runtime.onMessage.addListener(handleMessage);
-  void chrome.runtime.sendMessage({ type: config.messages.types.getStats });
-  setupEventListeners();
+
+  const resetButton = document.getElementById(config.dom.selectors.resetButton);
+  if (resetButton) {
+    resetButton.addEventListener('click', () => void handleResetStats());
+  }
+
+  // Request initial stats
+  log.debug('Requesting initial stats');
+  chrome.runtime.sendMessage({ type: config.messages.types.getStats }).catch(() => {});
 };
 
 document.addEventListener('DOMContentLoaded', initialize);

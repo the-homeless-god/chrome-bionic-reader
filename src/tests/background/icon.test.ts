@@ -1,6 +1,6 @@
 import { chrome } from '../mocks/chrome';
-import config from '@/config';
 import { updateIcon } from '@/background/icon';
+import config from '@/config';
 import { pipe } from 'fp-ts/function';
 import * as TE from 'fp-ts/TaskEither';
 import * as T from 'fp-ts/Task';
@@ -22,7 +22,7 @@ describe('Icon Module', () => {
 
     expect(result).toBe(true);
     expect(chrome.action.setIcon).toHaveBeenCalledWith({
-      path: config.icons.enabled,
+      path: config.icons.enabled.paths,
     });
   });
 
@@ -37,22 +37,22 @@ describe('Icon Module', () => {
 
     expect(result).toBe(true);
     expect(chrome.action.setIcon).toHaveBeenCalledWith({
-      path: config.icons.disabled,
+      path: config.icons.disabled.paths,
     });
   });
 
-  test('handles icon update errors', async () => {
-    const errorMessage = 'Icon error';
-    chrome.action.setIcon.mockImplementationOnce(() => Promise.reject(new Error(errorMessage)));
+  test('handles errors', async () => {
+    const error = new Error('Icon error');
+    chrome.action.setIcon.mockImplementationOnce(() => Promise.reject(error));
 
     const result = await pipe(
       updateIcon(true),
       TE.fold(
-        (error) => T.of(error.message),
+        (e) => T.of(e.message),
         () => T.of('success')
       )
     )();
 
-    expect(result).toBe(`${config.errors.icon.update}: Error: ${errorMessage}`);
+    expect(result).toBe(`${config.errors.icon.update}: Error: ${error.message}`);
   });
 });
