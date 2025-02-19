@@ -38,27 +38,27 @@ describe('Text processing', () => {
     });
 
     it('should process English word correctly', () => {
-      expect(processText('test')).toBe('t<b>est</b>');
+      expect(processText('test')).toBe('<b>te</b>st');
     });
 
     it('should process Russian word correctly', () => {
-      expect(processText('тест')).toBe('те<b>ст</b>');
+      expect(processText('тест')).toBe('<b>тес</b>т');
     });
 
     it('should process mixed text correctly', () => {
-      expect(processText('test тест')).toBe('t<b>est</b> те<b>ст</b>');
+      expect(processText('test тест')).toBe('<b>te</b>st <b>тес</b>т');
     });
 
     it('should handle multiple spaces', () => {
-      expect(processText('test  тест')).toBe('t<b>est</b> те<b>ст</b>');
+      expect(processText('test  тест')).toBe('<b>te</b>st <b>тес</b>т');
     });
 
     it('should handle short words', () => {
-      expect(processText('a т')).toBe('a<b></b> т<b></b>');
+      expect(processText('a т')).toBe('<b>a</b> <b>т</b>');
     });
 
     it('should handle punctuation', () => {
-      expect(processText('test, тест!')).toBe('t<b>est,</b> те<b>ст!</b>');
+      expect(processText('test, тест!')).toBe('<b>te</b>st, <b>тес</b>т!');
     });
   });
 });

@@ -11,15 +11,19 @@ const config: Config = {
   languages: {
     ru: {
       pattern: /[а-яё]/i,
-      boldLength: 2,
+      boldLength: 3,
       detector: /[а-яА-ЯёЁ]/,
       code: 'ru',
+      minBoldLength: 2,
+      maxBoldLength: 12,
     },
     en: {
       pattern: /[a-z]/i,
-      boldLength: 1,
+      boldLength: 2,
       detector: /[a-zA-Z]/,
       code: 'en',
+      minBoldLength: 1,
+      maxBoldLength: 12,
     },
   },
   defaultLanguage: 'en',
@@ -31,6 +35,16 @@ const config: Config = {
     emptyString: '',
     space: ' ',
     half: 2,
+    longWordThreshold: 6,
+    boldPercentage: 0.3,
+    minBoldPercentage: 0.2,
+    maxBoldPercentage: 0.5,
+    punctuation: {
+      comma: ',',
+    },
+    zero: 0,
+    hundred: 100,
+    thousand: 1000,
   },
   dom: {
     boldTag: 'b',
@@ -39,7 +53,7 @@ const config: Config = {
       text: Node.TEXT_NODE,
       element: Node.ELEMENT_NODE,
     },
-    excludedTags: ['script', 'style', 'noscript', 'iframe', 'b'],
+    excludedTags: ['script', 'style', 'noscript', 'iframe', 'b', 'code', 'pre', 'textarea', 'input', 'button'],
     treeWalker: {
       filter: {
         accept: NodeFilter.FILTER_ACCEPT,
@@ -57,11 +71,16 @@ const config: Config = {
     },
     selectors: {
       boldElements: 'b',
-      textElements: 'p, h1, h2, h3, h4, h5, h6, span, div',
+      textElements: 'p, h1, h2, h3, h4, h5, h6, li, td, th, figcaption, label, .article-text, .post-content, .content-text, article p',
       resetButton: 'resetButton',
+      reprocessButton: 'reprocessButton',
       processedWords: 'processedWords',
       averageTime: 'averageTime',
       sessionInfo: 'sessionInfo',
+      inputs: {
+        ruLength: 'ruLength',
+        enLength: 'enLength',
+      },
     },
     regex: {
       boldTags: /<\/?b>/g,
@@ -71,9 +90,14 @@ const config: Config = {
     keys: {
       enabled: 'enabled',
       stats: 'stats',
+      settings: 'settings',
     },
     defaultState: true,
     defaultStats,
+    defaultSettings: {
+      ru: { boldLength: 3 },
+      en: { boldLength: 2 },
+    },
   },
   icons: {
     enabled: {

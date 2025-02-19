@@ -17,14 +17,10 @@ export const getCurrentTab = (): TE.TaskEither<Error, chrome.tabs.Tab> =>
 export const executeContentScript = (tabId: number): TE.TaskEither<Error, void> =>
   pipe(
     TE.tryCatch(
-      () =>
-        chrome.scripting.executeScript({
-          target: { tabId },
-          func: () => {
-            const event = new Event('updatePage');
-            document.dispatchEvent(event);
-          },
-        }),
+      async () => {
+        // Отправляем сообщение в контент-скрипт
+        await chrome.tabs.sendMessage(tabId, { type: config.messages.types.getStats });
+      },
       (error) => new Error(`${config.errors.tabs.execute}: ${error}`)
     ),
     TE.map(() => undefined)

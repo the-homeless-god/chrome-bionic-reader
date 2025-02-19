@@ -4,6 +4,7 @@ import { log } from '@/services/logger';
 import { pipe } from 'fp-ts/function';
 import * as TE from 'fp-ts/TaskEither';
 import { resetStats as resetStatsService } from '@/services/stats';
+import { updateLanguageSettings, getSettings } from '@/services/settings';
 import * as T from 'fp-ts/Task';
 
 const updateStats = (stats: Stats): void => {
@@ -58,6 +59,45 @@ const handleResetStats = async (): Promise<void> => {
   )();
 };
 
+const initializeSettings = async (): Promise<void> => {
+  const settings = await getSettings()();
+  if ('right' in settings) {
+    const ruInput = document.getElementById(config.dom.selectors.inputs.ruLength) as HTMLInputElement;
+    const enInput = document.getElementById(config.dom.selectors.inputs.enLength) as HTMLInputElement;
+
+    if (ruInput && settings.right.ru) {
+      ruInput.value = settings.right.ru.boldLength.toString();
+    }
+    if (enInput && settings.right.en) {
+      enInput.value = settings.right.en.boldLength.toString();
+    }
+
+    // Add change event handlers
+    ruInput?.addEventListener('change', async () => {
+      const value = parseInt(ruInput.value, 10);
+      if (value >= config.languages.ru.minBoldLength && value <= config.languages.ru.maxBoldLength) {
+        await updateLanguageSettings(config.languages.ru.code, value)();
+      }
+    });
+
+    enInput?.addEventListener('change', async () => {
+      const value = parseInt(enInput.value, 10);
+      if (value >= config.languages.en.minBoldLength && value <= config.languages.en.maxBoldLength) {
+        await updateLanguageSettings(config.languages.en.code, value)();
+      }
+    });
+  }
+};
+
+const handleReprocess = async (): Promise<void> => {
+  log.debug('Reprocess button clicked');
+  // Send message to content script for reprocessing
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (tab.id) {
+    await chrome.tabs.sendMessage(tab.id, { type: config.messages.types.getStats });
+  }
+};
+
 export const handleMessage = (message: Message): void => {
   log.debug('Handling message in popup', message);
   switch (message.type) {
@@ -78,12 +118,24 @@ export const initialize = (): void => {
   chrome.runtime.onMessage.addListener(handleMessage);
 
   const resetButton = document.getElementById(config.dom.selectors.resetButton);
+  const reprocessButton = document.getElementById(config.dom.selectors.reprocessButton);
+
   if (resetButton) {
     log.debug('Adding reset button click handler');
     resetButton.addEventListener('click', () => void handleResetStats());
   } else {
     log.warn('Reset button not found');
   }
+
+  if (reprocessButton) {
+    log.debug('Adding reprocess button click handler');
+    reprocessButton.addEventListener('click', () => void handleReprocess());
+  } else {
+    log.warn('Reprocess button not found');
+  }
+
+  // Initialize settings
+  void initializeSettings();
 
   // Request initial stats
   log.debug('Requesting initial stats');

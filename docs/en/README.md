@@ -11,6 +11,31 @@ Chrome Bionic Reader is a Chrome extension that helps improve reading focus by h
 - Automatic publishing to Chrome Web Store
 - 100% test coverage
 - Continuous functionality through automated testing
+- Adaptive highlighting for long words
+- Flexible settings for each language
+
+## Features
+
+### Core Features
+- Word beginning highlighting for improved readability
+- Support for Russian and English languages
+- Adaptive highlighting for long words
+- Instant settings application
+- Text processing statistics
+
+### Settings
+- Configurable highlight length for each language (1-12 characters)
+- Adaptive highlighting for long words:
+  - Minimum highlight percentage: 20%
+  - Optimal highlight percentage: 30%
+  - Maximum highlight percentage: 50%
+- "Reprocess Text" button for applying changes
+
+### Interface
+- Simple and intuitive settings interface
+- Processed words statistics
+- Page processing time
+- Session duration
 
 ## Architecture
 
@@ -25,11 +50,13 @@ The extension follows functional programming principles:
 // Function composition example
 const pipe = (...fns) => x => fns.reduce((v, f) => f(v), x);
 
-// Pure function example
-const detectLanguage = char => 
-  Object.entries(config.languages)
-    .find(([_, { pattern }]) => pattern.test(char))
-    ?.[0] || config.defaultLanguage;
+// Pure function example with adaptive highlighting
+const calculateBoldLength = (word, language) => {
+  if (word.length > config.constants.longWordThreshold) {
+    return Math.ceil(word.length * config.constants.boldPercentage);
+  }
+  return config.languages[language].boldLength;
+};
 
 // Declarative style example
 const updatePage = () =>
@@ -64,7 +91,6 @@ cd chrome-bionic-reader
 
 ```bash
 # Install dependencies
-cd tests
 npm install
 
 # Run tests
@@ -79,31 +105,49 @@ npm run test:badges
 
 ## Configuration
 
-All configuration is centralized in `extension/config.js`:
+All configuration is centralized in `src/config.ts`:
 
-```javascript
+```typescript
 {
   languages: {
-    russian: {
+    ru: {
       pattern: /[а-яА-ЯёЁ]/,
-      boldLength: 3
+      boldLength: 3,
+      minBoldLength: 2,
+      maxBoldLength: 12
     },
-    english: {
+    en: {
       pattern: /[a-zA-Z]/,
-      boldLength: 2
+      boldLength: 2,
+      minBoldLength: 1,
+      maxBoldLength: 12
     }
   },
-  // ... other configuration
+  constants: {
+    longWordThreshold: 6,
+    boldPercentage: 0.3,
+    minBoldPercentage: 0.2,
+    maxBoldPercentage: 0.5
+  }
 }
 ```
 
-To add a new language:
+### Adding a New Language
 
-1. Add language configuration to `config.js`:
-```javascript
+1. Add language configuration to `src/config.ts`:
+```typescript
 japanese: {
   pattern: /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/,
-  boldLength: 1
+  boldLength: 1,
+  minBoldLength: 1,
+  maxBoldLength: 12
+}
+```
+
+2. Add default settings:
+```typescript
+defaultSettings: {
+  japanese: { boldLength: 1 }
 }
 ```
 

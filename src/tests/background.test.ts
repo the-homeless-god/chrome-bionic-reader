@@ -206,7 +206,7 @@ describe('Background Script', () => {
 
     test('handles browser action click error', async () => {
       const error = new Error('Icon error');
-      // @ts-ignore Because of the mock
+      // @ts-expect-error Because of the mock
       chrome.action.setIcon.mockRejectedValueOnce(error);
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 

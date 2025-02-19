@@ -12,7 +12,7 @@
 ## Key Features | Ключевые особенности
 
 - Functional Programming style | Функциональный стиль программирования
-- 100% test coverage | 100% покрытие тестами
+- >80% test coverage | >80% покрытие тестами
 - Russian language support | Поддержка русского языка
 - Automatic publishing | Автоматическая публикация
 - Clean architecture | Чистая архитектура

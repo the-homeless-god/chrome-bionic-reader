@@ -5,14 +5,14 @@ describe('Config', () => {
     test('contains settings for the Russian language', () => {
       expect(config.languages.ru).toBeDefined();
       expect(config.languages.ru.pattern).toBeDefined();
-      expect(config.languages.ru.boldLength).toBe(2);
+      expect(config.languages.ru.boldLength).toBe(3);
       expect('тест'.match(config.languages.ru.pattern)).toBeTruthy();
     });
 
     test('contains settings for the English language', () => {
       expect(config.languages.en).toBeDefined();
       expect(config.languages.en.pattern).toBeDefined();
-      expect(config.languages.en.boldLength).toBe(1);
+      expect(config.languages.en.boldLength).toBe(2);
       expect('test'.match(config.languages.en.pattern)).toBeTruthy();
     });
   });
@@ -23,7 +23,7 @@ describe('Config', () => {
     });
 
     test('contains correct excluded tags', () => {
-      expect(config.dom.excludedTags).toEqual(['script', 'style', 'noscript', 'iframe', 'b']);
+      expect(config.dom.excludedTags).toEqual(['script', 'style', 'noscript', 'iframe', 'b', 'code', 'pre', 'textarea', 'input', 'button']);
     });
   });
 

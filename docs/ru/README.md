@@ -11,6 +11,31 @@ Chrome Bionic Reader - это расширение для Chrome, которое
 - Автоматическая публикация в Chrome Web Store
 - 100% покрытие тестами
 - Постоянная работоспособность благодаря автоматизированному тестированию
+- Адаптивное выделение для длинных слов
+- Гибкие настройки для каждого языка
+
+## Возможности
+
+### Основные функции
+- Выделение начала слов для улучшения читаемости
+- Поддержка русского и английского языков
+- Адаптивное выделение для длинных слов
+- Мгновенное применение настроек
+- Статистика обработки текста
+
+### Настройки
+- Настройка длины выделения для каждого языка (1-12 символов)
+- Адаптивное выделение для длинных слов:
+  - Минимальный процент выделения: 20%
+  - Оптимальный процент выделения: 30%
+  - Максимальный процент выделения: 50%
+- Кнопка "Переподсветить текст" для применения изменений
+
+### Интерфейс
+- Простой и понятный интерфейс настроек
+- Статистика обработанных слов
+- Время обработки страницы
+- Продолжительность сессии
 
 ## Архитектура
 
@@ -25,11 +50,13 @@ Chrome Bionic Reader - это расширение для Chrome, которое
 // Пример композиции функций
 const pipe = (...fns) => x => fns.reduce((v, f) => f(v), x);
 
-// Пример чистой функции
-const detectLanguage = char => 
-  Object.entries(config.languages)
-    .find(([_, { pattern }]) => pattern.test(char))
-    ?.[0] || config.defaultLanguage;
+// Пример чистой функции с адаптивным выделением
+const calculateBoldLength = (word, language) => {
+  if (word.length > config.constants.longWordThreshold) {
+    return Math.ceil(word.length * config.constants.boldPercentage);
+  }
+  return config.languages[language].boldLength;
+};
 
 // Пример декларативного стиля
 const updatePage = () =>
@@ -64,7 +91,6 @@ cd chrome-bionic-reader
 
 ```bash
 # Установка зависимостей
-cd tests
 npm install
 
 # Запуск тестов
@@ -79,31 +105,49 @@ npm run test:badges
 
 ## Конфигурация
 
-Вся конфигурация централизована в `extension/config.js`:
+Вся конфигурация централизована в `src/config.ts`:
 
-```javascript
+```typescript
 {
   languages: {
-    russian: {
+    ru: {
       pattern: /[а-яА-ЯёЁ]/,
-      boldLength: 3
+      boldLength: 3,
+      minBoldLength: 2,
+      maxBoldLength: 12
     },
-    english: {
+    en: {
       pattern: /[a-zA-Z]/,
-      boldLength: 2
+      boldLength: 2,
+      minBoldLength: 1,
+      maxBoldLength: 12
     }
   },
-  // ... другие настройки
+  constants: {
+    longWordThreshold: 6,
+    boldPercentage: 0.3,
+    minBoldPercentage: 0.2,
+    maxBoldPercentage: 0.5
+  }
 }
 ```
 
-Для добавления нового языка:
+### Добавление нового языка
 
-1. Добавьте конфигурацию языка в `config.js`:
-```javascript
+1. Добавьте конфигурацию языка в `src/config.ts`:
+```typescript
 japanese: {
   pattern: /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/,
-  boldLength: 1
+  boldLength: 1,
+  minBoldLength: 1,
+  maxBoldLength: 12
+}
+```
+
+2. Добавьте настройки по умолчанию:
+```typescript
+defaultSettings: {
+  japanese: { boldLength: 1 }
 }
 ```
 

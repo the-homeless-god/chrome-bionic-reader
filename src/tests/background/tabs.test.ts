@@ -1,110 +1,70 @@
 import { chrome } from '../mocks/chrome';
 import config from '@/config';
-import { executeContentScript, getCurrentTab } from '@/background/tabs';
-import { pipe } from 'fp-ts/function';
-import * as TE from 'fp-ts/TaskEither';
-import * as T from 'fp-ts/Task';
+import { getCurrentTab, executeContentScript } from '@/background/tabs';
+import * as E from 'fp-ts/Either';
 
-const mockTab: chrome.tabs.Tab = {
-  id: 1,
-  index: 0,
-  pinned: false,
-  highlighted: false,
-  windowId: 1,
-  active: true,
-  incognito: false,
-  selected: true,
-  discarded: false,
-  autoDiscardable: true,
-  groupId: -1,
-};
+type Tab = chrome.tabs.Tab;
 
 describe('Tabs Module', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    chrome.tabs.query.mockImplementation(() => Promise.resolve([mockTab]));
-    chrome.scripting.executeScript.mockImplementation(() =>
-      Promise.resolve([{ result: undefined }])
-    );
+    chrome.tabs.query.mockImplementation(() => Promise.resolve([{ id: 1 } as Tab]));
+    chrome.tabs.sendMessage.mockImplementation(() => Promise.resolve());
   });
 
   describe('getCurrentTab', () => {
     test('returns current tab', async () => {
-      const result = await pipe(
-        getCurrentTab(),
-        TE.fold(
-          () => T.of(undefined),
-          (tab) => T.of(tab)
-        )
-      )();
-
-      expect(result).toEqual(mockTab);
+      const result = await getCurrentTab()();
+      expect(E.isRight(result)).toBe(true);
+      if (E.isRight(result)) {
+        expect(result.right).toEqual({ id: 1 });
+      }
       expect(chrome.tabs.query).toHaveBeenCalledWith({
         active: true,
         currentWindow: true,
       });
     });
 
-    test('handles no active tab', async () => {
-      chrome.tabs.query.mockImplementationOnce(() => Promise.resolve([]));
+    test('handles query error', async () => {
+      const queryError = new Error('Query error');
+      (chrome.tabs.query as jest.Mock).mockRejectedValueOnce(queryError);
 
-      const result = await pipe(
-        getCurrentTab(),
-        TE.fold(
-          (error) => T.of(error.message),
-          () => T.of('success')
-        )
-      )();
-
-      expect(result).toBe(`${config.errors.tabs.query}: Error: ${config.errors.tabs.query}`);
+      const result = await getCurrentTab()();
+      expect(E.isLeft(result)).toBe(true);
+      if (E.isLeft(result)) {
+        expect(result.left.message).toBe(`${config.errors.tabs.query}: Error: Query error`);
+      }
     });
 
-    test('handles query error', async () => {
-      chrome.tabs.query.mockImplementationOnce(() => Promise.reject(new Error('Query error')));
+    test('handles no tab found', async () => {
+      (chrome.tabs.query as jest.Mock).mockResolvedValueOnce([]);
 
-      const result = await pipe(
-        getCurrentTab(),
-        TE.fold(
-          (error) => T.of(error.message),
-          () => T.of('success')
-        )
-      )();
-
-      expect(result).toBe(`${config.errors.tabs.query}: Error: Query error`);
+      const result = await getCurrentTab()();
+      expect(E.isLeft(result)).toBe(true);
+      if (E.isLeft(result)) {
+        expect(result.left.message).toBe(config.errors.tabs.query);
+      }
     });
   });
 
   describe('executeContentScript', () => {
-    test('executes script in tab', async () => {
-      const result = await pipe(
-        executeContentScript(1),
-        TE.fold(
-          () => T.of(false),
-          () => T.of(true)
-        )
-      )();
-
-      expect(result).toBe(true);
-      expect(chrome.scripting.executeScript).toHaveBeenCalledWith({
-        target: { tabId: 1 },
-        func: expect.any(Function),
+    test('sends message to tab', async () => {
+      const result = await executeContentScript(1)();
+      expect(E.isRight(result)).toBe(true);
+      expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(1, {
+        type: config.messages.types.getStats
       });
     });
 
     test('handles execution error', async () => {
-      chrome.scripting.executeScript.mockImplementationOnce(() =>
-        Promise.reject(new Error('Execute error'))
-      );
+      const execError = new Error('Execute error');
+      (chrome.tabs.sendMessage as jest.Mock).mockRejectedValueOnce(execError);
 
-      const result = await pipe(
-        executeContentScript(1),
-        TE.fold(
-          (error) => T.of(error.message),
-          () => T.of('success')
-        )
-      )();
-
-      expect(result).toBe(`${config.errors.tabs.execute}: Error: Execute error`);
+      const result = await executeContentScript(1)();
+      expect(E.isLeft(result)).toBe(true);
+      if (E.isLeft(result)) {
+        expect(result.left.message).toBe(`${config.errors.tabs.execute}: Error: Execute error`);
+      }
     });
   });
 });

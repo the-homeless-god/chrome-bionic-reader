@@ -90,6 +90,7 @@ describe('Extension Initialization', () => {
 
   test('initializes extension automatically', async () => {
     jest.isolateModules(() => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       require('../background');
     });
 

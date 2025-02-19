@@ -18,12 +18,12 @@ const mockCleanupObserver = jest.fn();
 const mockGetStorageState = jest.fn().mockResolvedValue(true);
 
 jest.mock('@/content', () => ({
-  updatePage: mockUpdatePage,
+  updatePage: () => mockUpdatePage(),
   initializeExtension,
 }));
 
 jest.mock('@/background/storage', () => ({
-  getStorageState: mockGetStorageState,
+  getStorageState: () => mockGetStorageState(),
 }));
 
 jest.mock('@/content/observer', () => ({

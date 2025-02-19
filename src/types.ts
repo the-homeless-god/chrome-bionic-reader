@@ -3,6 +3,8 @@ type Language = {
   boldLength: number;
   detector: RegExp;
   code: string;
+  minBoldLength: number;
+  maxBoldLength: number;
 };
 
 type Languages = {
@@ -16,6 +18,16 @@ type Constants = {
   emptyString: string;
   space: string;
   half: number;
+  longWordThreshold: number;
+  boldPercentage: number;
+  minBoldPercentage: number;
+  maxBoldPercentage: number;
+  punctuation: {
+    comma: string;
+  };
+  zero: number;
+  hundred: number;
+  thousand: number;
 };
 
 export type Stats = {
@@ -23,6 +35,28 @@ export type Stats = {
   lastProcessingTime: number;
   averageProcessingTime: number;
   sessionStartTime: number;
+};
+
+export type LanguageSettings = {
+  boldLength: number;
+};
+
+export type Settings = {
+  [key: string]: LanguageSettings;
+};
+
+type DOMSelectors = {
+  boldElements: string;
+  textElements: string;
+  resetButton: string;
+  reprocessButton: string;
+  processedWords: string;
+  averageTime: string;
+  sessionInfo: string;
+  inputs: {
+    ruLength: string;
+    enLength: string;
+  };
 };
 
 export interface Config {
@@ -61,14 +95,7 @@ export interface Config {
         characterData: boolean;
       };
     };
-    selectors: {
-      boldElements: string;
-      textElements: string;
-      resetButton: string;
-      processedWords: string;
-      averageTime: string;
-      sessionInfo: string;
-    };
+    selectors: DOMSelectors;
     regex: {
       boldTags: RegExp;
     };
@@ -77,9 +104,11 @@ export interface Config {
     keys: {
       enabled: string;
       stats: string;
+      settings: string;
     };
     defaultState: boolean;
     defaultStats: Stats;
+    defaultSettings: Settings;
   };
   icons: {
     enabled: {
@@ -147,3 +176,12 @@ export type TextPart = {
   start: string;
   end: string;
 };
+
+// Extending global Window interface
+declare global {
+  interface Window {
+    updatePage?: () => Promise<void>;
+    resetState?: () => void;
+    config?: Config;
+  }
+}
