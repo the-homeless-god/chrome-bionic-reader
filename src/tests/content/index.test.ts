@@ -201,7 +201,8 @@ describe('Content Script', () => {
 
       await new Promise((resolve) => setTimeout(resolve, 100));
       expect(chrome.storage.local.get).toHaveBeenCalledWith(
-        [config.storage.keys.enabled]
+        [config.storage.keys.enabled],
+        expect.any(Function)
       );
     });
 

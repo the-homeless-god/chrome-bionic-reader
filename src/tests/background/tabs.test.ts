@@ -42,7 +42,7 @@ describe('Tabs Module', () => {
       const result = await getCurrentTab()();
       expect(E.isLeft(result)).toBe(true);
       if (E.isLeft(result)) {
-        expect(result.left.message).toBe(config.errors.tabs.query);
+        expect(result.left.message).toBe(`${config.errors.tabs.query}: Error: Failed to query tabs`);
       }
     });
   });

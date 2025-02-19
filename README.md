@@ -20,6 +20,17 @@
 - Flexible language settings | Гибкие настройки для каждого языка
 - Real-time statistics | Статистика в реальном времени
 
+## Examples | Примеры
+
+### English Text | Английский текст
+![English Text Example](docs/examples/processed_compressed/en-bold_compressed.jpg)
+
+### Russian Text | Русский текст
+![Russian Text Example](docs/examples/processed_compressed/ru-bold_compressed.jpg)
+
+### Settings | Настройки
+![Extension Settings](docs/examples/processed_compressed/extension-settings_compressed.jpg)
+
 ## Installation | Установка
 
 You can install the extension in two ways | Вы можете установить расширение двумя способами:

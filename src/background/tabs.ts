@@ -18,10 +18,8 @@ export const executeContentScript = (tabId: number): TE.TaskEither<Error, void> 
   pipe(
     TE.tryCatch(
       async () => {
-        // Отправляем сообщение в контент-скрипт
         await chrome.tabs.sendMessage(tabId, { type: config.messages.types.getStats });
       },
       (error) => new Error(`${config.errors.tabs.execute}: ${error}`)
-    ),
-    TE.map(() => undefined)
+    )
   );
