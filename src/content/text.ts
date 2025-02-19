@@ -60,7 +60,10 @@ export const calculateBoldLength = (word: string, language: string): number => {
   );
 };
 
-export const splitIntoWords = (text: string): string[] => text.split(config.dom.wordSeparator);
+export const splitIntoWords = (text: string): string[] => {
+  // Сохраняем пробелы и специальные символы
+  return text.split(/(\s+)/).filter(Boolean);
+};
 
 export const createBoldTag = (text: string): string =>
   `<${config.dom.boldTag}>${text}</${config.dom.boldTag}>`;
@@ -89,7 +92,11 @@ export const processText = (text: string): string => {
   return pipe(
     text,
     splitIntoWords,
-    (words) => words.map(processWord),
-    (words) => words.join(config.constants.space)
+    (words) => words.map(word => {
+      // Пропускаем обработку для пробельных символов
+      if (/^\s+$/.test(word)) return ' '; // Нормализуем пробелы
+      return processWord(word);
+    }),
+    (words) => words.join('')  // Соединяем без дополнительных пробелов
   );
 };

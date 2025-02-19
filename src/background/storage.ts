@@ -25,3 +25,12 @@ export const getStorageState = (): TE.TaskEither<Error, boolean> =>
 
 export const initializeStorage = (): TE.TaskEither<Error, void> =>
   updateStorage(config.storage.defaultState);
+
+export const getState = async (): Promise<boolean> => {
+  const result = await chrome.storage.local.get([config.storage.keys.enabled]);
+  return result[config.storage.keys.enabled] ?? true;
+};
+
+export const setState = async (enabled: boolean): Promise<void> => {
+  await chrome.storage.local.set({ [config.storage.keys.enabled]: enabled });
+};
