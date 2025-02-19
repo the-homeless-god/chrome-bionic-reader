@@ -5,7 +5,8 @@
 ## TL;DR для занятых
 
 - Расширение для Chrome, которое делает чтение кода и документации быстрее
-- Поддерживает русский и английский языки
+- Поддерживает русский и английский языки с гибкими настройками
+- Адаптивное выделение для длинных слов
 - Open source, без трекеров и аналитики
 - Установка: [Chrome Web Store](https://chromewebstore.google.com/detail/chrome-bionic-reader/)
 - Исходники: [GitHub](https://github.com/the-homeless-god/chrome-bionic-reader)
@@ -30,24 +31,26 @@
 
 Но даже опытные читатели спотыкаются на плохо структурированном тексте. Мозгу нужны точки фиксации.
 
-Прикол в том, что наш мозг может парсить даже такое:
-```
-D94НН03 С006Щ3НN3 П0К4ЗЫ8437, К4КN3 У9N8N73ЛЬНЫ3 83ЩN М0Ж37 93Л47Ь Н4Ш Р4ЗУМ!
-```
+## Решение: Bionic Reading с адаптивным выделением
 
-Почему? Потому что он цепляется за паттерны и достраивает остальное.
-
-## Решение: Bionic Reading
-
-Швейцарский разработчик придумал простой хак:
+Основная идея проста:
 - Выделяем начало каждого слова жирным
 - Мозг цепляется за эти "якоря"
 - Достраивает остальное автоматически
 - Скорость чтения увеличивается
 
+Дополнительно:
+- Для длинных слов используется адаптивное выделение
+- Процент выделения зависит от длины слова
+- Гибкие настройки для каждого языка
+
 ## Почему моя версия
 
-1. Работает с русским языком (оригинал не умеет)
+1. Работает с русским языком:
+   - Гибкие настройки длины выделения (2-12 символов)
+   - Учет особенностей языка
+   - Адаптивное выделение для длинных слов
+
 2. Чистый код в функциональном стиле:
    - Композиция функций через pipe
    - Чистые функции
@@ -55,7 +58,7 @@ D94НН03 С006Щ3НN3 П0К4ЗЫ8437, К4КN3 У9N8N73ЛЬНЫ3 83ЩN М0Ж37 9
    - Тесты с 100% покрытием
 
 3. Для разработчиков:
-   - Весь код в одном файле (легко читать и модифицировать)
+   - TypeScript с строгой типизацией
    - Автоматический деплой через GitHub Actions
    - Semantic versioning
    - Легко добавить новый язык
@@ -68,34 +71,54 @@ D94НН03 С006Щ3НN3 П0К4ЗЫ8437, К4КN3 У9N8N73ЛЬНЫ3 83ЩN М0Ж37 9
 
 ## Технические детали
 
-```javascript
+```typescript
 // Конфигурация для языков
 {
   languages: {
-    russian: {
+    ru: {
       pattern: /[а-яА-ЯёЁ]/,
-      boldLength: 3
+      boldLength: 3,
+      minBoldLength: 2,
+      maxBoldLength: 12
     },
-    english: {
+    en: {
       pattern: /[a-zA-Z]/,
-      boldLength: 2
+      boldLength: 2,
+      minBoldLength: 1,
+      maxBoldLength: 12
     }
+  },
+  constants: {
+    longWordThreshold: 6,
+    boldPercentage: 0.3,
+    minBoldPercentage: 0.2,
+    maxBoldPercentage: 0.5
   }
 }
 
-// Основная логика
-const modifyWord = pipe(
-  word => calculateBoldLength(word),
-  length => wrapInBold(word, length),
-  joinWithBold
-);
+// Основная логика с адаптивным выделением
+const calculateBoldLength = (word: string, language: string): number => {
+  if (word.length > config.constants.longWordThreshold) {
+    const percentLength = Math.ceil(word.length * config.constants.boldPercentage);
+    const minLength = Math.max(
+      Math.ceil(word.length * config.constants.minBoldPercentage),
+      config.languages[language].minBoldLength
+    );
+    const maxLength = Math.min(
+      Math.ceil(word.length * config.constants.maxBoldPercentage),
+      config.languages[language].maxBoldLength
+    );
+    return Math.min(Math.max(percentLength, minLength), maxLength);
+  }
+  return config.languages[language].boldLength;
+};
 ```
 
 ## Как использовать
 
 1. Установить расширение
-2. Кликнуть на иконку для включения
-3. Profit! Теперь начало каждого слова выделено
+2. Настроить длину выделения для каждого языка
+3. Profit! Теперь начало каждого слова выделено с учетом его длины
 
 Особенно полезно для:
 - Чтения документации
@@ -114,22 +137,23 @@ cd chrome-bionic-reader
 
 2. Установите зависимости и запустите тесты:
 ```bash
-cd tests
 npm install
 npm test
 ```
 
-3. Добавьте свой язык в `extension/config.js`:
-```javascript
+3. Добавьте свой язык в `src/config.ts`:
+```typescript
 japanese: {
   pattern: /[\u3040-\u309F]/,
-  boldLength: 1
+  boldLength: 1,
+  minBoldLength: 1,
+  maxBoldLength: 12
 }
 ```
 
 4. Соберите и протестируйте:
 ```bash
-npm run test:coverage  # Проверить покрытие тестами (используется nyc)
+npm run test:coverage  # Проверить покрытие тестами
 npm run test:badges   # Обновить бейджи
 ```
 
@@ -138,7 +162,7 @@ npm run test:badges   # Обновить бейджи
 - Автоматическая проверка тестов при каждом PR
 - Semantic versioning для релизов
 - Автоматическая публикация в Chrome Web Store
-- Генерация бейджей покрытия через nyc
+- Генерация бейджей покрытия
 - GitHub Packages для хранения артефактов
 
 ## Полезные ссылки
@@ -146,7 +170,6 @@ npm run test:badges   # Обновить бейджи
 - [Оригинальный Bionic Reading](https://bionic-reading.com/)
 - [Научное обоснование](https://www.oxfordlearning.com/what-is-bionic-reading-and-why-should-you-use-it/)
 - [Reddit тред с обсуждением](https://www.reddit.com/r/coolguides/comments/ut3x75/bionic_reading_does_this_help_you/)
-- [Logseq плагин](https://github.com/sawhney17/logseq-bionic-speedreader)
 
 ## Контакты
 
