@@ -16,6 +16,9 @@
 - Russian language support | Поддержка русского языка
 - Automatic publishing | Автоматическая публикация
 - Clean architecture | Чистая архитектура
+- Adaptive word highlighting | Адаптивное выделение слов
+- Flexible language settings | Гибкие настройки для каждого языка
+- Real-time statistics | Статистика в реальном времени
 
 ## Installation | Установка
 
