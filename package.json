@@ -1,6 +1,6 @@
 {
   "name": "@the-homeless-god/chrome-bionic-reader",
-  "version": "1.0.0",
+  "version": "1.3.0",
   "description": "Tests for Chrome Bionic Reader extension",
   "main": "index.js",
   "scripts": {
