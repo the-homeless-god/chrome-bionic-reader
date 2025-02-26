@@ -10,6 +10,7 @@
     "test:badges": "jest-coverage-badges",
     "dev": "vite",
     "build": "vite build -c vite.background.config.ts && vite build -c vite.popup.config.ts && vite build -c vite.content.config.ts && node scripts/build.js",
+    "build:release": "rm -rf extension && mkdir extension && npm run build && cp -r dist/* extension && zip -r extension.zip extension",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" --fix",
     "format": "prettier --write \"src/**/*.ts\"",
