@@ -1,13 +1,11 @@
 {
   "manifest_version": 3,
   "name": "Chrome Bionic Reader | Бионическое чтение",
-  "version": "1.0.0",
+  "version": "1.3.1",
   "description": "Improves reading focus by highlighting word beginnings | Улучшает фокусировку при чтении, выделяя начало слов",
   "permissions": [
     "storage",
-    "activeTab",
-    "scripting",
-    "tabs"
+    "activeTab"
   ],
   "host_permissions": [
     "<all_urls>"
