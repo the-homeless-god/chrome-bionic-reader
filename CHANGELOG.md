@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/the-homeless-god/chrome-bionic-reader/compare/v1.4.1...v1.5.0) (2025-03-03)
+
+
+### Features
+
+* **readme:** trigger release ([95284f9](https://github.com/the-homeless-god/chrome-bionic-reader/commit/95284f9b0fb2b3d4d5f4bfd44b3d8e611ba1566c))
+
 # [1.4.0](https://github.com/the-homeless-god/chrome-bionic-reader/compare/v1.3.0...v1.4.0) (2025-02-26)
 
 
