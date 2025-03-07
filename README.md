@@ -1,5 +1,8 @@
 # Chrome Bionic Reader
 
+[Demo](https://chromewebstore.google.com/detail/chrome-bionic-reader-%D0%B1%D0%B8%D0%BE%D0%BD/bofckkbophijgakfoeihfmnjfphcabhi?authuser=0&hl=ru)
+[Link to product](https://chromewebstore.google.com/detail/chrome-bionic-reader-%D0%B1%D0%B8%D0%BE%D0%BD/bofckkbophijgakfoeihfmnjfphcabhi?authuser=0&hl=ru)
+
 v1.4.1
 
 [![CI/CD](https://github.com/the-homeless-god/chrome-bionic-reader/actions/workflows/ci.yml/badge.svg)](https://github.com/the-homeless-god/chrome-bionic-reader/actions/workflows/ci.yml)
